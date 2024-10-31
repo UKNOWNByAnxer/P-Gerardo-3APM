@@ -138,6 +138,7 @@ const app = Vue.createApp({
         
         this.$nextTick(() => {
             Sortable.create(this.$refs.sortableList, {
+                handle: '.handle',
                 onEnd: (event) => {
                     const movedItem = this.canciones.splice(event.oldIndex, 1)[0];
                     this.canciones.splice(event.newIndex, 0, movedItem);
