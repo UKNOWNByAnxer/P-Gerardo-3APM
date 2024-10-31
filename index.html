@@ -13,18 +13,52 @@
 </head>
 <body class="bg-gray-900 text-white">
     <div id="appVue" class="container mx-auto p-6 bg-gray-800 shadow-xl rounded-xl mt-10 max-w-lg relative">
+        <!-- Alert Container - Fixed Position -->
+        <div class="fixed top-4 right-4 z-50 space-y-2">
+            <div 
+                v-for="alert in alerts" 
+                :key="alert.id"
+                role="alert"
+                :class="[
+                    alertTypes[alert.type].class, 
+                    'p-2 rounded-lg flex items-center transition duration-300 ease-in-out transform hover:scale-105 shadow-lg'
+                ]"
+            >
+                <svg
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    :class="['h-5 w-5 flex-shrink-0 mr-2', alertTypes[alert.type].icon]"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M13 16h-1v-4h1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        stroke-width="2"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                    ></path>
+                </svg>
+                <p class="text-xs font-semibold">{{ alert.message }}</p>
+                <button 
+                    @click="removeAlert(alert.id)" 
+                    class="ml-2 text-current hover:opacity-75"
+                >
+                    ✕
+                </button>
+            </div>
+        </div>
         <div class="main">
             <h1 class="text-3xl font-extrabold text-center mb-8">Lista de Canciones</h1>
 
             <!-- Formulario para agregar canciones -->
             <form @submit.prevent="addItem" class="flex mb-6 gap-2">
-                <input v-model="add" type="text" placeholder="Añadir nueva canción" class="flex-grow border border-gray-500 rounded-lg p-3 bg-gray-700 text-white" required>
+                <input v-model="add" type="text" placeholder="Añadir nueva canción" class="flex-grow border border-gray-500 rounded-lg p-3 bg-gray-700 text-white" maxlength="35" required>
                 <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all añadir">Añadir</button>
             </form>
 
             <!-- Lista de canciones -->
             <ul ref="sortableList" class="space-y-4">
-                <li v-for="(cancion, index) in canciones" :key="cancion + index" class="relative flex items-center p-4 border border-gray-500 rounded-lg bg-gray-700 card">
+                <li v-for="(cancion, index) in canciones" :key="cancion + index" class="relative flex items-center p-4 border border-gray-500 rounded-lg bg-gray-700 card overflow-hidden">
                     <!-- Handle To Sortable -->
                     <div class="cursor-grab text-white rounded-full w-10 h-10 flex items-center justify-center transition-all">
                         <i class="bx bx-move text-2xl text-rose-500 handle"></i>
