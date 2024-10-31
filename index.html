@@ -26,8 +26,8 @@
             <ul ref="sortableList" class="space-y-4">
                 <li v-for="(cancion, index) in canciones" :key="cancion + index" class="relative flex items-center p-4 border border-gray-500 rounded-lg bg-gray-700 card">
                     <!-- Handle To Sortable -->
-                    <div class="cursor-grab handle text-white rounded-full w-10 h-10 flex items-center justify-center transition-all">
-                        <i class="bx bx-move text-2xl text-rose-500"></i>
+                    <div class="cursor-grab text-white rounded-full w-10 h-10 flex items-center justify-center transition-all">
+                        <i class="bx bx-move text-2xl text-rose-500 handle"></i>
                     </div>
                     <!-- Nombre de la canción -->
                     <div class="flex-1">
