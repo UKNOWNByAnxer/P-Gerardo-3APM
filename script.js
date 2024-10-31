@@ -11,11 +11,47 @@ const app = Vue.createApp({
             accessToken: null,
             audio: null,
             songDetails: null,
-            isPlaying: false,  // New state to track if audio is playing
-            currentPlayingIndex: null  // New state to track which song is playing
+            isPlaying: false,
+            currentPlayingIndex: null,
+            // New alerts-related properties
+            alerts: [],
+            alertTypes: {
+                success: {
+                    class: 'bg-green-100 dark:bg-green-900 border-l-4 border-green-500 dark:border-green-700 text-green-900 dark:text-green-100',
+                    icon: 'text-green-600'
+                },
+                info: {
+                    class: 'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-500 dark:border-blue-700 text-blue-900 dark:text-blue-100',
+                    icon: 'text-blue-600'
+                },
+                warning: {
+                    class: 'bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 dark:border-yellow-700 text-yellow-900 dark:text-yellow-100',
+                    icon: 'text-yellow-600'
+                },
+                error: {
+                    class: 'bg-red-100 dark:bg-red-900 border-l-4 border-red-500 dark:border-red-700 text-red-900 dark:text-red-100',
+                    icon: 'text-red-600'
+                }
+            }
         };
     },
     methods: {
+        // New method to show alerts
+        showAlert(type, message, duration = 3000) {
+            const id = Date.now();
+            this.alerts.push({ id, type, message });
+
+            // Automatically remove the alert after specified duration
+            setTimeout(() => {
+                this.removeAlert(id);
+            }, duration);
+        },
+
+        // Method to remove specific alert
+        removeAlert(id) {
+            this.alerts = this.alerts.filter(alert => alert.id !== id);
+        },
+
         async fetchAccessToken() {
             try {
                 const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -28,21 +64,24 @@ const app = Vue.createApp({
                 });
                 const data = await response.json();
                 this.accessToken = data.access_token;
+                this.showAlert('success', 'Access token successfully retrieved');
             } catch (error) {
                 console.error("Error fetching access token:", error);
+                this.showAlert('error', 'Failed to retrieve access token');
             }
         },
 
-        // Updated playSong method with toggle functionality
         async playSong(query, index) {
             // If clicking the same song that's currently playing
             if (index === this.currentPlayingIndex && this.audio) {
                 if (this.isPlaying) {
                     this.audio.pause();
                     this.isPlaying = false;
+                    this.showAlert('info', 'Song paused');
                 } else {
                     this.audio.play();
                     this.isPlaying = true;
+                    this.showAlert('info', 'Song resumed');
                 }
                 return;
             }
@@ -75,21 +114,23 @@ const app = Vue.createApp({
                         }
                         this.audio = new Audio(previewUrl);
                         
-                        // Add ended event listener to reset playing state
                         this.audio.addEventListener('ended', () => {
                             this.isPlaying = false;
                             this.currentPlayingIndex = null;
+                            this.showAlert('info', 'Song finished playing');
                         });
                         
                         this.audio.play();
                         this.isPlaying = true;
                         this.currentPlayingIndex = index;
+                        this.showAlert('success', `Now playing: ${track.name}`);
                     } else {
-                        alert('Esta canción no tiene vista previa disponible');
+                        this.showAlert('warning', 'This song has no preview available');
                     }
                 }
             } catch (error) {
                 console.error("Error playing song:", error);
+                this.showAlert('error', 'Failed to play song');
             }
         },
 
@@ -97,11 +138,15 @@ const app = Vue.createApp({
             const cancionExistente = this.canciones.some(c => c.toLowerCase() === this.add.trim().toLowerCase());
             if (this.add.trim() !== "" && !cancionExistente) {
                 this.canciones.push(this.add.trim());
+                this.showAlert('success', `Song "${this.add.trim()}" added successfully`);
                 this.add = "";
+            } else if (cancionExistente) {
+                this.showAlert('warning', 'Song already exists in the list');
             }
         },
 
         removeItem(index) {
+            const removedSong = this.canciones[index];
             if (index === this.currentPlayingIndex && this.audio) {
                 this.audio.pause();
                 this.audio = null;
@@ -109,6 +154,7 @@ const app = Vue.createApp({
                 this.currentPlayingIndex = null;
             }
             this.canciones.splice(index, 1);
+            this.showAlert('info', `Song "${removedSong}" removed from the list`);
         },
 
         modifyItem(index) {
@@ -122,10 +168,17 @@ const app = Vue.createApp({
                 c.toLowerCase() === this.tempSong.trim().toLowerCase() && i !== this.editingIndex
             );
             if (this.tempSong.trim() !== "" && !cancionExistente) {
+                const oldSongName = this.canciones[this.editingIndex];
                 this.canciones[this.editingIndex] = this.tempSong.trim();
+                
+                if (this.isPlaying) {
+                    this.audio.pause();
+                    this.isPlaying = false;
+                }
+                this.showAlert('success', `Song renamed from "${oldSongName}" to "${this.tempSong.trim()}"`);
                 this.closeModal();
             } else if (cancionExistente) {
-                this.$refs.modalText.innerHTML = 'Modificar Canción <span style="color:red;">Ya Existe</span>';
+                this.showAlert('warning', 'Song already exists');
             }
         },
 
@@ -142,6 +195,7 @@ const app = Vue.createApp({
                 onEnd: (event) => {
                     const movedItem = this.canciones.splice(event.oldIndex, 1)[0];
                     this.canciones.splice(event.newIndex, 0, movedItem);
+                    this.showAlert('info', 'Song order updated');
                 },
                 animation: 150
             });
