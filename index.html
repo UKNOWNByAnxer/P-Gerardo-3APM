@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="../vue3.js"></script>
     <script src="./scripts/tailwind.js"></script>
     <title>Lista de Canciones</title>
     <link rel="stylesheet" href="./styles/styles.css">
@@ -24,7 +24,12 @@
 
             <!-- Lista de canciones -->
             <ul ref="sortableList" class="space-y-4">
-                <li v-for="(cancion, index) in canciones" :key="cancion + index" class="relative flex items-center p-4 border border-gray-500 rounded-lg bg-gray-700 card cursor-grab">
+                <li v-for="(cancion, index) in canciones" :key="cancion + index" class="relative flex items-center p-4 border border-gray-500 rounded-lg bg-gray-700 card">
+                    <!-- Handle To Sortable -->
+                    <div class="cursor-grab handle text-white rounded-full w-10 h-10 flex items-center justify-center transition-all">
+                        <i class="bx bx-move text-2xl text-rose-500"></i>
+                    </div>
+                    <!-- Nombre de la canción -->
                     <div class="flex-1">
                         <span class="text-lg font-semibold">{{ cancion }}</span>
                     </div>
